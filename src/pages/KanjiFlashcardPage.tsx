@@ -1,33 +1,25 @@
 import { useParams } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Shuffle, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import Layout from "../components/Layout";
-import { getLessonById } from "../data";
-import type { VocabItem } from "../types/lesson";
+import { getKanjiLessonById } from "../data";
+import type { KanjiItem } from "../types/lesson";
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-function hasKanji(item: VocabItem): boolean {
-  return item.kanji !== item.hiragana && item.kanji.trim() !== "";
-}
-
-export default function FlashcardPage() {
+export default function KanjiFlashcardPage() {
   const { id } = useParams();
-  const lesson = getLessonById(Number(id));
+  const lesson = getKanjiLessonById(Number(id));
+  const allCards = lesson?.kanji_list ?? [];
 
-  const allItems: VocabItem[] = useMemo(
-    () => lesson?.categories.flatMap((c) => c.items) ?? [],
-    [lesson]
-  );
-
-  const [cards, setCards] = useState<VocabItem[]>(allItems);
+  const [cards, setCards] = useState<KanjiItem[]>(allCards);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
-  const handleShuffle = () => { setCards(shuffle(allItems)); setIndex(0); setFlipped(false); };
-  const handleReset = () => { setCards(allItems); setIndex(0); setFlipped(false); };
+  const handleShuffle = () => { setCards(shuffle(allCards)); setIndex(0); setFlipped(false); };
+  const handleReset = () => { setCards(allCards); setIndex(0); setFlipped(false); };
   const go = (dir: 1 | -1) => {
     setIndex((i) => Math.max(0, Math.min(cards.length - 1, i + dir)));
     setFlipped(false);
@@ -35,16 +27,15 @@ export default function FlashcardPage() {
 
   if (!lesson || !cards.length) return null;
   const card = cards[index];
-  const showBoth = hasKanji(card);
 
   return (
-    <Layout title={`Flashcard — Bài ${lesson.id}`} backTo="/">
+    <Layout title={`Flashcard Kanji — Bài ${id}`} backTo="/">
       <div className="text-center text-sm text-gray-400 mb-6">{index + 1} / {cards.length}</div>
 
       <div style={{ perspective: "1200px" }} className="w-full max-w-lg mx-auto mb-8"
         onClick={() => setFlipped(f => !f)}>
         <div style={{
-          position: "relative", width: "100%", height: "260px",
+          position: "relative", width: "100%", height: "280px",
           transformStyle: "preserve-3d",
           transition: "transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)",
           transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
@@ -59,14 +50,10 @@ export default function FlashcardPage() {
             background: "white", border: "1.5px solid #e5e7eb",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           }}>
-            <div style={{ fontSize: "3.5rem", fontWeight: 700, color: "#1f2937", lineHeight: 1.2 }}>
-              {card.kanji}
+            <div style={{ fontSize: "5rem", fontWeight: 700, color: "#1f2937", lineHeight: 1 }}>{card.kanji}</div>
+            <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#f59e0b", letterSpacing: "0.15em", marginTop: "0.75rem" }}>
+              {card.han_viet}
             </div>
-            {showBoth && (
-              <div style={{ fontSize: "1.2rem", color: "#6b7280", marginTop: "0.75rem" }}>
-                {card.hiragana}
-              </div>
-            )}
           </div>
 
           {/* BACK */}
@@ -75,12 +62,26 @@ export default function FlashcardPage() {
             backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
             borderRadius: "1rem", display: "flex", flexDirection: "column",
-            justifyContent: "center", alignItems: "center", padding: "2rem",
-            background: "#f0fdfa", border: "1.5px solid #99f6e4",
+            justifyContent: "center", alignItems: "center", padding: "1.5rem",
+            background: "#fffbeb", border: "1.5px solid #fcd34d",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           }}>
-            <div style={{ fontSize: "2rem", fontWeight: 700, color: "#0f766e", textAlign: "center", lineHeight: 1.4 }}>
-              {card.meaning}
+            <div style={{ fontSize: "1.6rem", fontWeight: 700, color: "#92400e", marginBottom: "1rem", textAlign: "center" }}>
+              {card.kanji_meaning}
+            </div>
+            <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {card.words.map((w, i) => (
+                <div key={i} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  background: "white", borderRadius: "0.5rem",
+                  padding: "0.4rem 0.75rem", border: "1px solid #fde68a",
+                }}>
+                  <span style={{ fontWeight: 700, color: "#1f2937", fontSize: "1rem" }}>{w.word}</span>
+                  <span style={{ color: "#6b7280", fontSize: "0.8rem", textAlign: "right", maxWidth: "60%" }}>
+                    {w.reading}<br />{w.meaning}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
