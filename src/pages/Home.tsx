@@ -13,7 +13,7 @@ export default function Home() {
       animate={{ opacity: 1, scale: 1 }}    // Về kích thước chuẩn
       exit={{ opacity: 0, x: -20 }}         // Trượt sang trái khi thoát
       transition={{ duration: 0.4 }}
-      
+
       className="min-h-screen bg-white/40 backdrop-blur-sm"
     >
       <div className="max-w-5xl mx-auto px-4 py-10">
@@ -24,13 +24,13 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lessons.map((lesson, idx) => (
-            <motion.div 
+            <motion.div
               key={lesson.id}
               // Thêm hiệu ứng hiện từng thẻ bài học một (stagger effect)
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }} // Thẻ sau hiện chậm hơn thẻ trước 0.1s
-              
+
               className="bg-white rounded-2xl shadow-md border border-rose-100 p-6 hover:shadow-xl transition-shadow"
             >
               <div className="mb-4">
@@ -61,11 +61,15 @@ export default function Home() {
               <div className="flex flex-col gap-2">
                 <button onClick={() => navigate(`/lesson/${lesson.id}/kanji`)}
                   className="flex items-center gap-2 w-full justify-center bg-amber-50 text-amber-600 font-semibold px-4 py-2 rounded-xl hover:bg-amber-100 transition border border-amber-200">
-                  <PenLine size={17} /> Danh sách Kanji
+                  <PenLine size={17} /> Danh sách
                 </button>
                 <button onClick={() => navigate(`/lesson/${lesson.id}/kanji-flashcard`)}
-                  className="flex items-center gap-2 w-full justify-center bg-orange-500 text-white font-bold px-4 py-2 rounded-xl hover:bg-orange-600 transition shadow-sm">
-                  <Layers size={17} /> Flashcard Kanji
+                  className="flex items-center gap-2 w-full justify-center bg-orange-50 text-orange-600 font-semibold px-4 py-2 rounded-xl hover:bg-orange-100 transition border border-orange-200">
+                  <Layers size={17} /> Flashcard
+                </button>
+                <button onClick={() => navigate(`/lesson/${lesson.id}/kanji-quiz`)}
+                  className="flex items-center gap-2 w-full justify-center bg-green-500 text-white font-bold px-4 py-2 rounded-xl hover:bg-green-600 transition shadow-sm">
+                  <HelpCircle size={17} /> Kiểm tra
                 </button>
               </div>
             </motion.div>

@@ -7,6 +7,7 @@ import QuizPage from "./pages/QuizPage";
 import KanjiPage from "./pages/KanjiPage";
 import KanjiFlashcardPage from "./pages/KanjiFlashcardPage";
 import NotFound from "./pages/NotFound";
+import KanjiQuizPage from "./pages/KanjiQuizPage";
 
 export default function App() {
   const location = useLocation();
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/lesson/:id/quiz" element={<QuizPage />} />
         <Route path="/lesson/:id/kanji" element={<KanjiPage />} />
         <Route path="/lesson/:id/kanji-flashcard" element={<KanjiFlashcardPage />} />
+        <Route path="/lesson/:id/kanji-quiz" element={<KanjiQuizPage />} />
 
         {/* Route 404 phải nằm ở cuối cùng */}
         <Route path="*" element={<NotFound />} />
