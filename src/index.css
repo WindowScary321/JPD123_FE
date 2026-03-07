@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
+@import "tailwindcss";
+
 body {
   font-family: "Noto Sans JP", sans-serif;
-  background-color: #fff8f9;
+  /* Tìm bừa trên internet */
+  background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1920&auto=format&fit=crop'); 
+  background-size: cover; 
+  background-position: center; 
+  background-attachment: fixed; 
+  background-repeat: no-repeat;
 }
 
 .flashcard-scene { perspective: 1000px; }

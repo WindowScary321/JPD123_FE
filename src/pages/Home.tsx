@@ -6,9 +6,9 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#fff8f9]">
+    <div className="min-h-screen bg-white/40 backdrop-blur-sm border-b border-white/20">
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="text-center mb-10">
+        <div className="text-Fcenter mb-10">
           <h1 className="text-4xl font-bold text-gray-800">🌸 Ôn Thi FE JPD123 🌸</h1>
           <p className="mt-2 text-gray-500 text-lg">Chọn bài học để bắt đầu ôn tập</p>
         </div>

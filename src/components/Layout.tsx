@@ -11,7 +11,7 @@ interface LayoutProps {
 export default function Layout({ children, title, backTo = "/" }: LayoutProps) {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-[#fff8f9]">
+    <div className="min-h-screen bg-white/40 backdrop-blur-sm border-b border-white/20">
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
           <button
