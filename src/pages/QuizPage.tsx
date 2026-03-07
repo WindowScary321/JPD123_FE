@@ -1,125 +1,321 @@
-import { useParams } from "react-router-dom";
-import { useState, useMemo, useCallback } from "react";
-import { CheckCircle2, XCircle, RotateCcw, Trophy } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Trophy, Star, ArrowLeft } from "lucide-react";
 import Layout from "../components/Layout";
 import { getLessonById } from "../data";
 import type { VocabItem } from "../types/lesson";
 
-type QuizState = "playing" | "answered" | "finished";
+type QuizStep = "typeSelection" | "partSelection" | "playing" | "results";
+type QuizType = "romaji" | "hira-to-meaning" | "meaning-to-hira";
+
+interface QuizQuestion {
+  prompt: React.ReactNode;
+  answers: string[]; // Mảng các đáp án được chấp nhận (viết thường)
+  displayAnswer: string; // Đáp án hiển thị nếu người dùng làm sai
+  placeholder: string;
+}
+
+interface IncorrectAnswer {
+  prompt: React.ReactNode;
+  userAnswer: string;
+  correctAnswer: string;
+}
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-function buildQuestions(items: VocabItem[]) {
-  return shuffle(items).map((item) => {
-    const wrongs = shuffle(items.filter((x) => x.meaning !== item.meaning)).slice(0, 3);
-    return { item, choices: shuffle([item, ...wrongs]) };
-  });
-}
-
 export default function QuizPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const lesson = getLessonById(Number(id));
-  const allItems = useMemo(() => lesson?.categories.flatMap((c) => c.items) ?? [], [lesson]);
-  const [questions] = useState(() => buildQuestions(allItems));
+
+  // --- STATES ---
+  const [step, setStep] = useState<QuizStep>("typeSelection");
+  const [quizType, setQuizType] = useState<QuizType | null>(null);
+
+  // Trạng thái khi đang chơi
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [qIndex, setQIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
-  const [state, setState] = useState<QuizState>("playing");
+  const [incorrectAnswers, setIncorrectAnswers] = useState<IncorrectAnswer[]>([]);
 
-  const current = questions[qIndex];
-
-  const handleAnswer = useCallback((meaning: string) => {
-    if (state !== "playing") return;
-    setSelected(meaning);
-    if (meaning === current.item.meaning) setScore((s) => s + 1);
-    setState("answered");
-  }, [state, current]);
-
-  const next = () => {
-    if (qIndex + 1 >= questions.length) setState("finished");
-    else { setQIndex((i) => i + 1); setSelected(null); setState("playing"); }
-  };
+  // Trạng thái của form nhập liệu
+  const [inputValue, setInputValue] = useState("");
+  const [feedback, setFeedback] = useState<{ isCorrect: boolean; correctAnswer: string } | null>(null);
 
   if (!lesson) return <div className="p-8 text-center">Không tìm thấy bài học.</div>;
 
-  if (state === "finished") {
-    const pct = Math.round((score / questions.length) * 100);
+  // --- HANDLERS ---
+  const handleSelectType = (type: QuizType) => {
+    setQuizType(type);
+    setStep("partSelection");
+  };
+
+  const handleSelectPart = (partIndex: number | "all") => {
+    let selectedItems: VocabItem[] = [];
+
+    if (partIndex === "all") {
+      selectedItems = lesson.categories.flatMap((c) => c.items);
+    } else {
+      selectedItems = lesson.categories[partIndex].items;
+    }
+
+    if (selectedItems.length === 0) {
+      alert("Không có từ vựng trong phần này!");
+      return;
+    }
+
+    // Xây dựng câu hỏi dựa trên Type đã chọn
+    let generatedQuestions: QuizQuestion[] = [];
+
+    selectedItems.forEach((item) => {
+      if (quizType === "romaji") {
+        generatedQuestions.push({
+          prompt: <span>Cách đọc Romaji của từ <strong className="text-amber-700">"{item.kanji || item.hiragana}"</strong> là gì?</span>,
+          answers: [item.romaji.toLowerCase()],
+          displayAnswer: item.romaji,
+          placeholder: "Nhập cách đọc Romaji...",
+        });
+      } else if (quizType === "hira-to-meaning") {
+        // Tách nghĩa bằng dấu phẩy hoặc gạch chéo để người dùng gõ 1 nghĩa cũng đúng
+        const possibleAnswers = item.meaning.split(/, |\//).map(s => s.trim().toLowerCase());
+        generatedQuestions.push({
+          prompt: <span>Nghĩa của từ <strong className="text-amber-700">"{item.hiragana}"</strong> là gì?</span>,
+          answers: possibleAnswers,
+          displayAnswer: item.meaning,
+          placeholder: "Nhập nghĩa tiếng Việt...",
+        });
+      } else if (quizType === "meaning-to-hira") {
+        generatedQuestions.push({
+          prompt: <span>Từ tiếng Nhật của <strong className="text-amber-700">"{item.meaning}"</strong> là gì?</span>,
+          answers: [item.hiragana.toLowerCase(), item.kanji.toLowerCase()],
+          displayAnswer: `${item.kanji} (${item.hiragana})`,
+          placeholder: "Nhập Hiragana hoặc Kanji...",
+        });
+      }
+    });
+
+    setQuestions(shuffle(generatedQuestions));
+    setQIndex(0);
+    setScore(0);
+    setIncorrectAnswers([]);
+    setInputValue("");
+    setFeedback(null);
+    setStep("playing");
+  };
+
+  const handleSubmitAnswer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || feedback !== null) return;
+
+    const userAnswer = inputValue.trim().toLowerCase();
+    const currentQ = questions[qIndex];
+
+    // Kiểm tra xem câu trả lời của user có nằm trong mảng đáp án cho phép không
+    const isCorrect = currentQ.answers.some(ans => ans === userAnswer);
+
+    if (isCorrect) {
+      setScore(s => s + 1);
+    } else {
+      setIncorrectAnswers(prev => [...prev, {
+        prompt: currentQ.prompt,
+        userAnswer: inputValue,
+        correctAnswer: currentQ.displayAnswer
+      }]);
+    }
+
+    setFeedback({ isCorrect, correctAnswer: currentQ.displayAnswer });
+  };
+
+  const handleNextQuestion = () => {
+    if (qIndex + 1 >= questions.length) {
+      setStep("results");
+    } else {
+      setQIndex(i => i + 1);
+      setInputValue("");
+      setFeedback(null);
+    }
+  };
+
+  const resetQuiz = () => {
+    setStep("typeSelection");
+    setQuizType(null);
+  };
+
+  // --- VIEWS ---
+
+  // 1. Màn hình chọn Hình thức (Romaji, Nghĩa...)
+  if (step === "typeSelection") {
     return (
-      <Layout title="Kết quả" backTo="/">
-        <div className="max-w-md mx-auto text-center py-10">
-          <Trophy size={64} className="mx-auto text-yellow-400 mb-4" />
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2>
-          <p className="text-gray-500 mb-6">
-            Bạn đúng <span className="font-bold text-rose-500">{score}/{questions.length}</span> câu ({pct}%)
-          </p>
-          <div className="w-full bg-gray-200 rounded-full h-4 mb-8">
-            <div className="bg-rose-400 h-4 rounded-full" style={{ width: `${pct}%` }} />
+      <Layout title={`Kiểm Tra Từ Vựng - Bài ${lesson.id}`} backTo="/">
+        <div className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center mt-6">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Kiểm Tra Từ Vựng - Bài {lesson.id}</h2>
+          <p className="text-gray-500 mb-8">Chọn một hình thức để bắt đầu kiểm tra.</p>
+          <div className="space-y-4">
+            <button onClick={() => handleSelectType("romaji")} className="w-full text-lg bg-amber-500 text-white font-bold px-4 py-4 rounded-xl hover:bg-amber-600 transition shadow-sm hover:-translate-y-0.5">
+              Cách đọc Romaji
+            </button>
+            <button onClick={() => handleSelectType("hira-to-meaning")} className="w-full text-lg bg-amber-500 text-white font-bold px-4 py-4 rounded-xl hover:bg-amber-600 transition shadow-sm hover:-translate-y-0.5">
+              Từ Hiragana → Nghĩa
+            </button>
+            <button onClick={() => handleSelectType("meaning-to-hira")} className="w-full text-lg bg-amber-500 text-white font-bold px-4 py-4 rounded-xl hover:bg-amber-600 transition shadow-sm hover:-translate-y-0.5">
+              Từ Nghĩa → Hiragana
+            </button>
           </div>
-          <p className="text-2xl mb-6">
-            {pct >= 80 ? "🎉 Xuất sắc!" : pct >= 60 ? "👍 Khá tốt!" : "📚 Cần ôn thêm!"}
-          </p>
-          <button onClick={() => window.location.reload()}
-            className="flex items-center gap-2 mx-auto px-6 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition">
-            <RotateCcw size={18} /> Làm lại
-          </button>
         </div>
       </Layout>
     );
   }
 
-  return (
-    <Layout title={`Kiểm tra — Bài ${lesson.id}`} backTo="/">
-      <div className="mb-6">
-        <div className="flex justify-between text-sm text-gray-500 mb-1">
-          <span>Câu {qIndex + 1} / {questions.length}</span>
-          <span>✅ {score} đúng</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-rose-400 h-2 rounded-full transition-all"
-            style={{ width: `${(qIndex / questions.length) * 100}%` }} />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 text-center mb-6">
-        <p className="text-sm text-gray-400 mb-3">Nghĩa của từ này là gì?</p>
-        <div className="text-5xl font-bold text-gray-800 mb-2">{current.item.kanji}</div>
-        <div className="text-gray-400 text-lg">{current.item.hiragana}</div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-        {current.choices.map((choice, i) => {
-          const isCorrect = choice.meaning === current.item.meaning;
-          const isSelected = choice.meaning === selected;
-          let cls = "w-full text-left px-5 py-4 rounded-xl border-2 font-medium transition text-gray-700 ";
-          if (state === "answered") {
-            if (isCorrect) cls += "bg-green-50 border-green-400 text-green-700";
-            else if (isSelected) cls += "bg-red-50 border-red-400 text-red-600";
-            else cls += "bg-white border-gray-200 opacity-50";
-          } else {
-            cls += "bg-white border-gray-200 hover:border-rose-300 hover:bg-rose-50 cursor-pointer";
-          }
-          return (
-            <button key={i} className={cls} onClick={() => handleAnswer(choice.meaning)}>
-              <span className="flex items-center gap-2">
-                {state === "answered" && isCorrect && <CheckCircle2 size={18} className="text-green-500 shrink-0" />}
-                {state === "answered" && isSelected && !isCorrect && <XCircle size={18} className="text-red-500 shrink-0" />}
-                {choice.meaning}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {state === "answered" && (
-        <div className="text-center">
-          <button onClick={next}
-            className="px-8 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition">
-            {qIndex + 1 >= questions.length ? "Xem kết quả →" : "Câu tiếp theo →"}
+  // 2. Màn hình chọn Phần (Category)
+  if (step === "partSelection") {
+    return (
+      <Layout title={`Chọn phần - Bài ${lesson.id}`} backTo="/">
+        <div className="max-w-xl mx-auto mt-6">
+          <button onClick={() => setStep("typeSelection")} className="flex items-center gap-2 text-gray-500 hover:text-amber-600 transition mb-4 font-medium">
+            <ArrowLeft size={18} /> Quay lại chọn hình thức
           </button>
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Kiểm Tra Từ Vựng - Bài {lesson.id}</h2>
+            <p className="text-gray-500 mb-8">Chọn phần bạn muốn kiểm tra.</p>
+            <div className="space-y-4">
+              {lesson.categories.map((cat, index) => (
+                <button key={index} onClick={() => handleSelectPart(index)} className="w-full text-lg bg-amber-500 text-white font-bold px-4 py-4 rounded-xl hover:bg-amber-600 transition shadow-sm hover:-translate-y-0.5">
+                  {cat.category_name}
+                </button>
+              ))}
+              <button onClick={() => handleSelectPart("all")} className="w-full text-lg bg-teal-500 text-white font-bold px-4 py-4 rounded-xl hover:bg-teal-600 transition shadow-sm hover:-translate-y-0.5 mt-6">
+                Tất cả các phần
+              </button>
+            </div>
+          </div>
         </div>
-      )}
-    </Layout>
-  );
+      </Layout>
+    );
+  }
+
+  // 3. Màn hình Trả lời câu hỏi
+  if (step === "playing") {
+    const currentQ = questions[qIndex];
+    return (
+      <Layout title={`Đang kiểm tra - Bài ${lesson.id}`} backTo="/">
+        <div className="max-w-xl mx-auto mt-6">
+          <div className="flex justify-between items-center mb-4 text-sm font-bold uppercase tracking-wider">
+            <span className="text-gray-700 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+              Câu {qIndex + 1} / {questions.length}
+            </span>
+            <div className="flex items-center gap-3 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+              <span className="text-green-600">✅ {score} Đúng</span>
+              <span className="text-gray-400">|</span>
+              <span className="text-rose-500">❌ {incorrectAnswers.length} Sai</span>
+            </div>
+          </div>
+
+          {/* Thanh tiến trình */}
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-8">
+            <div className="bg-amber-400 h-2.5 rounded-full transition-all duration-300" style={{ width: `${(qIndex / questions.length) * 100}%` }}></div>
+          </div>
+
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-xl text-center text-gray-800 mb-8">{currentQ.prompt}</p>
+
+            <form onSubmit={handleSubmitAnswer}>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                disabled={feedback !== null}
+                placeholder={currentQ.placeholder}
+                autoFocus
+                autoComplete="off" spellCheck="false"
+                className="w-full px-5 py-4 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-50 transition disabled:bg-gray-50 disabled:text-gray-500"
+              />
+
+              {/* Vùng hiển thị đúng/sai */}
+              <div className="mt-6 min-h-[4rem]">
+                {feedback && (
+                  <div className={`p-4 rounded-xl border ${feedback.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                    {feedback.isCorrect ? (
+                      <p className="text-green-700 font-bold flex items-center gap-2">🎉 Chính xác!</p>
+                    ) : (
+                      <div>
+                        <p className="text-red-600 font-bold mb-1">❌ Không chính xác.</p>
+                        <p className="text-gray-700">Đáp án đúng: <span className="font-bold text-green-700">{feedback.correctAnswer}</span></p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6">
+                {!feedback ? (
+                  <button type="submit" disabled={!inputValue.trim()} className="w-full bg-amber-500 text-white font-bold py-4 px-4 rounded-xl hover:bg-amber-600 transition disabled:opacity-50 disabled:hover:bg-amber-500">
+                    Kiểm Tra
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleNextQuestion} autoFocus className="w-full bg-teal-500 text-white font-bold py-4 px-4 rounded-xl hover:bg-teal-600 transition">
+                    {qIndex + 1 >= questions.length ? "Xem kết quả" : "Câu Tiếp Theo →"}
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // 4. Màn hình Kết quả
+  if (step === "results") {
+    const pct = Math.round((score / questions.length) * 100);
+    const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : pct >= 30 ? 1 : 0;
+
+    return (
+      <Layout title="Kết quả" backTo="/">
+        <div className="max-w-2xl mx-auto mt-6">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center mb-8">
+            <Trophy size={64} className="mx-auto text-amber-400 mb-4" />
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2>
+            <p className="text-gray-500 mb-4">Bạn đã trả lời đúng <span className="font-bold text-amber-600">{score}/{questions.length}</span> câu.</p>
+
+            <p className="text-6xl font-black text-teal-500 mb-6">{pct}%</p>
+
+            <div className="flex justify-center gap-2 mb-8">
+              {[1, 2, 3].map((star) => (
+                <Star key={star} size={48} className={star <= stars ? "fill-yellow-400 text-yellow-400" : "fill-gray-100 text-gray-200"} />
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button onClick={resetQuiz} className="px-8 py-4 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition">
+                Làm lại bài này
+              </button>
+              <button onClick={() => navigate("/")} className="px-8 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">
+                Về trang chủ
+              </button>
+            </div>
+          </div>
+
+          {/* Hiển thị danh sách câu sai */}
+          {incorrectAnswers.length > 0 && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Xem lại các câu sai:</h3>
+              <div className="space-y-4">
+                {incorrectAnswers.map((item, idx) => (
+                  <div key={idx} className="bg-red-50 p-4 rounded-xl border border-red-100 text-left">
+                    <p className="text-gray-800 mb-2 font-medium">Q: {item.prompt}</p>
+                    <p className="text-red-600 text-sm mb-1">❌ Bạn gõ: <span className="font-semibold">{item.userAnswer}</span></p>
+                    <p className="text-green-700 text-sm">✅ Đáp án: <span className="font-bold">{item.correctAnswer}</span></p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </Layout>
+    );
+  }
+
+  return null;
 }
