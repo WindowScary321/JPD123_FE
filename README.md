@@ -5,15 +5,15 @@
 ### Run thí shit
 - Cài Dependency 
     ```
-    npm install
+    npm install -g pnpm && pnpm install
     ```
 - Chạy dev server
     ```
-    npm run dev
+    pnpm dev
     ```
 - Build website để deploy
     ```
-    npm run build
+    pnpm build
     ```
 ### Project file map (t quá lười để sửa lại nên để ai tự viết :v)
 ```

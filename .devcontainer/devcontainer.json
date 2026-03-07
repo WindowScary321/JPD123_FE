@@ -1,0 +1,25 @@
+{
+  "name": "Node.js and pnpm stuffs",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "features": {
+  },
+
+  "postCreateCommand": "corepack enable pnpm && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile",
+  "postStartCommand": "pnpm install --prefer-offline && pnpm dev",
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite Preview",
+      "onAutoForward": "openPreview"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  }
+}
