@@ -63,7 +63,7 @@ const lesson6: Lesson = {
       items: [
         { kanji: "お好み焼き", hiragana: "おこのみやき", romaji: "okonomiyaki", meaning: "Món bánh xèo Nhật" },
         { kanji: "すき焼き", hiragana: "すきやき", romaji: "sukiyaki", meaning: "Món nhúng có thịt bò và rau" },
-        { kanji: "遊びます［遊ぶ］1", hiragana: "あそびます", romaji: "asobimasu", meaning: "Chơi, chơi đùa" },
+        { kanji: "遊びます［遊ぶ］", hiragana: "あそびます", romaji: "asobimasu", meaning: "Chơi, chơi đùa" },
         { kanji: "ぜひ", hiragana: "ぜひ", romaji: "zehi", meaning: "Nhất định" },
         { kanji: "まだ", hiragana: "まだ", romaji: "mada", meaning: "Vẫn, chưa" },
         { kanji: "もう", hiragana: "もう", romaji: "mou", meaning: "Đã, rồi" },

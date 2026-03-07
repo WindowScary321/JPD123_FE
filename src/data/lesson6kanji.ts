@@ -5,7 +5,7 @@ const lesson6Kanji: KanjiLesson = {
   title: "Kanji - Bài 6 (Bản Hoàn Thiện Đầy Đủ)",
   categories: [
     {
-      category_label: "1. Nhóm 9 Kanji trọng tâm (Từ slide bài giảng)",
+      category_label: "1. Nhóm Kanji trọng tâm",
       kanji_list: [
         { kanji: "今", han_viet: "KIM", kanji_meaning: "Hiện tại, nay", words: [{ word: "今日", meaning: "Hôm nay", reading: "きょう (kyou)" }, { word: "今週", meaning: "Tuần này", reading: "こんしゅう (konshuu)" }, { word: "今月", meaning: "Tháng này", reading: "こんげつ (kongetsu)" }, { word: "今年", meaning: "Năm nay", reading: "ことし (kotoshi)" }, { word: "今度", meaning: "Lần tới", reading: "こんど (kondo)" }, { word: "今晩", meaning: "Tối nay", reading: "こんばん (konban)" }] },
         { kanji: "来", han_viet: "LAI", kanji_meaning: "Đến, tới", words: [{ word: "来ます", meaning: "Đến", reading: "きます (kimasu)" }, { word: "来週", meaning: "Tuần sau", reading: "らいしゅう (raishuu)" }, { word: "来月", meaning: "Tháng sau", reading: "らいげつ (raigetsu)" }, { word: "来年", meaning: "Năm sau", reading: "らいねん (rainen)" }, { word: "来日", meaning: "Đến Nhật Bản", reading: "らいにち (rainichi)" }] },
