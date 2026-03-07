@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useMemo, useEffect, useRef } from "react";
-import { Trophy, Star, ArrowLeft } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Trophy, Star } from "lucide-react";
 import Layout from "../components/Layout";
 import { getKanjiLessonById } from "../data";
 
