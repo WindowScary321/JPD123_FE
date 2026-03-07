@@ -12,7 +12,7 @@ function shuffle<T>(arr: T[]): T[] {
 export default function KanjiFlashcardPage() {
   const { id } = useParams();
   const lesson = getKanjiLessonById(Number(id));
-  const allCards = lesson?.kanji_list ?? [];
+  const allCards = lesson?.categories.flatMap(c => c.kanji_list) ?? [];
 
   const [cards, setCards] = useState<KanjiItem[]>(allCards);
   const [index, setIndex] = useState(0);

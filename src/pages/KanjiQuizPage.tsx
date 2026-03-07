@@ -9,8 +9,8 @@ type QuizType = "kanji-to-hanviet" | "kanji-to-reading" | "kanji-to-meaning";
 
 interface QuizQuestion {
   prompt: React.ReactNode;
-  answers: string[]; 
-  displayAnswer: string; 
+  answers: string[];
+  displayAnswer: string;
   placeholder: string;
 }
 
@@ -34,7 +34,7 @@ export default function KanjiQuizPage() {
   const [qIndex, setQIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState<IncorrectAnswer[]>([]);
-  
+
   const [inputValue, setInputValue] = useState("");
   const [feedback, setFeedback] = useState<{ isCorrect: boolean; correctAnswer: string } | null>(null);
 
@@ -43,8 +43,11 @@ export default function KanjiQuizPage() {
   const handleSelectType = (type: QuizType) => {
     let generatedQuestions: QuizQuestion[] = [];
 
+    // Gộp tất cả kanji từ các categories lại thành 1 mảng phẳng
+    const allKanji = lesson.categories.flatMap(c => c.kanji_list);
+
     if (type === "kanji-to-hanviet") {
-      lesson.kanji_list.forEach(k => {
+      allKanji.forEach(k => {
         generatedQuestions.push({
           prompt: <span>Hán Việt của chữ <strong className="text-green-700 text-2xl">"{k.kanji}"</strong> là gì?</span>,
           answers: [k.han_viet.toLowerCase()],
@@ -53,11 +56,10 @@ export default function KanjiQuizPage() {
         });
       });
     } else if (type === "kanji-to-reading") {
-      lesson.kanji_list.flatMap(k => k.words).forEach(w => {
-        // Data mẫu: "とうきょう (toukyou)" -> Tách riêng Hiragana và Romaji để chấm điểm
+      allKanji.flatMap(k => k.words).forEach(w => {
         const match = w.reading.match(/(.*?)\s*\((.*?)\)/);
-        const validAnswers = match 
-          ? [match[1].trim().toLowerCase(), match[2].trim().toLowerCase()] 
+        const validAnswers = match
+          ? [match[1].trim().toLowerCase(), match[2].trim().toLowerCase()]
           : [w.reading.toLowerCase()];
 
         generatedQuestions.push({
@@ -68,7 +70,7 @@ export default function KanjiQuizPage() {
         });
       });
     } else if (type === "kanji-to-meaning") {
-      lesson.kanji_list.flatMap(k => k.words).forEach(w => {
+      allKanji.flatMap(k => k.words).forEach(w => {
         const possibleAnswers = w.meaning.split(/, |\//).map(s => s.trim().toLowerCase());
         generatedQuestions.push({
           prompt: <span>Nghĩa của từ <strong className="text-green-700 text-2xl">"{w.word}"</strong> là gì?</span>,
@@ -162,17 +164,17 @@ export default function KanjiQuizPage() {
               <span className="text-rose-500">❌ {incorrectAnswers.length} Sai</span>
             </div>
           </div>
-          
+
           <div className="w-full bg-gray-200 rounded-full h-2.5 mb-8">
             <div className="bg-green-500 h-2.5 rounded-full transition-all duration-300" style={{ width: `${(qIndex / questions.length) * 100}%` }}></div>
           </div>
 
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
             <p className="text-xl text-center text-gray-800 mb-8">{currentQ.prompt}</p>
-            
+
             <form onSubmit={handleSubmitAnswer}>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 disabled={feedback !== null}
@@ -227,7 +229,7 @@ export default function KanjiQuizPage() {
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2>
             <p className="text-gray-500 mb-4">Bạn đã trả lời đúng <span className="font-bold text-green-600">{score}/{questions.length}</span> câu.</p>
             <p className="text-6xl font-black text-teal-600 mb-6">{pct}%</p>
-            
+
             <div className="flex justify-center gap-2 mb-8">
               {[1, 2, 3].map((star) => (
                 <Star key={star} size={48} className={star <= stars ? "fill-yellow-400 text-yellow-400" : "fill-gray-100 text-gray-200"} />

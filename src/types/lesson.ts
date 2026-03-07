@@ -17,7 +17,6 @@ export interface Lesson {
   categories: VocabCategory[];
 }
 
-// --- Kanji types ---
 export interface KanjiWord {
   word: string;
   meaning: string;
@@ -31,8 +30,13 @@ export interface KanjiItem {
   words: KanjiWord[];
 }
 
+export interface KanjiCategory {
+  category_label: string;
+  kanji_list: KanjiItem[];
+}
+
 export interface KanjiLesson {
   lessonId: number;
   title: string;
-  kanji_list: KanjiItem[];
+  categories: KanjiCategory[];
 }
