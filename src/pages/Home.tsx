@@ -1,22 +1,38 @@
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Layers, HelpCircle, PenLine } from "lucide-react";
+import { motion } from "framer-motion"; // Import motion
 import { lessons } from "../data";
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white/40 backdrop-blur-sm border-b border-white/20">
+    <motion.div
+      // Hiệu ứng cho trang chủ
+      initial={{ opacity: 0, scale: 0.98 }} // Hơi thu nhỏ 1 chút
+      animate={{ opacity: 1, scale: 1 }}    // Về kích thước chuẩn
+      exit={{ opacity: 0, x: -20 }}         // Trượt sang trái khi thoát
+      transition={{ duration: 0.4 }}
+      
+      className="min-h-screen bg-white/40 backdrop-blur-sm"
+    >
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="text-Fcenter mb-10">
+        <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-gray-800">🌸 Ôn Thi FE JPD123 🌸</h1>
           <p className="mt-2 text-gray-500 text-lg">Chọn bài học để bắt đầu ôn tập</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lessons.map((lesson) => (
-            <div key={lesson.id}
-              className="bg-white rounded-2xl shadow-md border border-rose-100 p-6 hover:shadow-xl transition-shadow">
+          {lessons.map((lesson, idx) => (
+            <motion.div 
+              key={lesson.id}
+              // Thêm hiệu ứng hiện từng thẻ bài học một (stagger effect)
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }} // Thẻ sau hiện chậm hơn thẻ trước 0.1s
+              
+              className="bg-white rounded-2xl shadow-md border border-rose-100 p-6 hover:shadow-xl transition-shadow"
+            >
               <div className="mb-4">
                 <span className="text-2xl font-bold text-rose-400 uppercase tracking-wide text-center block"> Bài {lesson.id} </span>
                 <p className="text-sm text-gray-500 mt-1">{lesson.description}</p>
@@ -36,7 +52,7 @@ export default function Home() {
                   <Layers size={17} /> Flashcard
                 </button>
                 <button onClick={() => navigate(`/lesson/${lesson.id}/quiz`)}
-                  className="flex items-center gap-2 w-full justify-center bg-purple-500 text-white font-bold px-4 py-2 rounded-xl hover:bg-purple-600 transition">
+                  className="flex items-center gap-2 w-full justify-center bg-purple-500 text-white font-bold px-4 py-2 rounded-xl hover:bg-purple-600 transition shadow-sm">
                   <HelpCircle size={17} /> Kiểm tra
                 </button>
               </div>
@@ -48,14 +64,14 @@ export default function Home() {
                   <PenLine size={17} /> Danh sách Kanji
                 </button>
                 <button onClick={() => navigate(`/lesson/${lesson.id}/kanji-flashcard`)}
-                  className="flex items-center gap-2 w-full justify-center bg-orange-500 text-white font-bold px-4 py-2 rounded-xl hover:bg-orange-600 transition">
+                  className="flex items-center gap-2 w-full justify-center bg-orange-500 text-white font-bold px-4 py-2 rounded-xl hover:bg-orange-600 transition shadow-sm">
                   <Layers size={17} /> Flashcard Kanji
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
