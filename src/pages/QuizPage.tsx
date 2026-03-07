@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Trophy, Star, ArrowLeft } from "lucide-react";
 import Layout from "../components/Layout";
 import { getLessonById } from "../data";
@@ -43,6 +43,7 @@ export default function QuizPage() {
   // Trạng thái của form nhập liệu
   const [inputValue, setInputValue] = useState("");
   const [feedback, setFeedback] = useState<{ isCorrect: boolean; correctAnswer: string } | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   if (!lesson) return <div className="p-8 text-center">Không tìm thấy bài học.</div>;
 
@@ -135,8 +136,20 @@ export default function QuizPage() {
       setQIndex(i => i + 1);
       setInputValue("");
       setFeedback(null);
+      // Tự động focus lại vào ô input sau khi sang câu mới
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   };
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (step === "playing" && feedback !== null && e.key === "Enter") {
+        e.preventDefault();
+        handleNextQuestion();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [step, feedback, qIndex, questions.length]);
 
   const resetQuiz = () => {
     setStep("typeSelection");
@@ -222,6 +235,7 @@ export default function QuizPage() {
 
             <form onSubmit={handleSubmitAnswer}>
               <input
+                ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
