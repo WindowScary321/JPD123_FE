@@ -9,7 +9,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#fff8f9]">
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-800">🌸 Học Tiếng Nhật</h1>
+          <h1 className="text-4xl font-bold text-gray-800">🌸 Ôn Thi FE JPD123 🌸</h1>
           <p className="mt-2 text-gray-500 text-lg">Chọn bài học để bắt đầu ôn tập</p>
         </div>
 
@@ -18,8 +18,7 @@ export default function Home() {
             <div key={lesson.id}
               className="bg-white rounded-2xl shadow-md border border-rose-100 p-6 hover:shadow-xl transition-shadow">
               <div className="mb-4">
-                <span className="text-xs font-semibold text-rose-400 uppercase tracking-wide">Bài {lesson.id}</span>
-                <h2 className="text-xl font-bold text-gray-800 mt-1">{lesson.title}</h2>
+                <span className="text-2xl font-bold text-rose-400 uppercase tracking-wide text-center block"> Bài {lesson.id} </span>
                 <p className="text-sm text-gray-500 mt-1">{lesson.description}</p>
               </div>
               <div className="text-sm text-gray-400 mb-5">

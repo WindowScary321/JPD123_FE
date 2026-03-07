@@ -1,7 +1,7 @@
 {
-  "name": "hoc-tieng-nhat",
+  "name": "jpd123-fe",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
