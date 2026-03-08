@@ -1,6 +1,7 @@
 {
   "name": "jpd123-fe",
   "private": true,
+  "packageManager": "pnpm@10.31.0",
   "version": "1.0.1",
   "type": "module",
   "scripts": {
