@@ -4,8 +4,9 @@
   "features": {
   },
 
-  "postCreateCommand": "corepack enable pnpm && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile",
-  "postStartCommand": "pnpm install --prefer-offline && pnpm dev",
+  "postCreateCommand": "corepack enable && corepack prepare pnpm@latest --activate",
+  "postStartCommand": "bash -lc 'corepack enable && pnpm install --prefer-offline && nohup pnpm dev --host 0.0.0.0 >/tmp/pnpm-dev.log 2>&1 &'",
+  "forwardPorts": [5173],
   "portsAttributes": {
     "5173": {
       "label": "Vite Preview",
