@@ -27,7 +27,9 @@ const lesson7: Lesson = {
         { kanji: "横", hiragana: "よこ", romaji: "yoko", meaning: "Bên cạnh, chiều ngang" },
         { kanji: "迎えに行きます［迎えに行く]", hiragana: "むかえにいきます", romaji: "mukae ni ikimasu", meaning: "Đi đón" },
         { kanji: "います［いる］", hiragana: "います", romaji: "imasu", meaning: "Có mặt ở (người, động vật)" },
-        { kanji: "もしもし", hiragana: "もしもし", romaji: "moshimoshi", meaning: "A lô a lô" }
+        { kanji: "もしもし", hiragana: "もしもし", romaji: "moshimoshi", meaning: "A lô a lô" },
+        { kanji: "右", hiragana: "みぎ", romaji: "migi", meaning: "Phải" },
+        { kanji: "左", hiragana: "ひだり", romaji: "hidari", meaning: "Trái" }
       ]
     },
     {

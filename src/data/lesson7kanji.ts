@@ -27,7 +27,9 @@ const lesson7Kanji: KanjiLesson = {
         { kanji: "外", han_viet: "NGOẠI", kanji_meaning: "Ngoài, bên ngoài", words: [{ word: "外", meaning: "Bên ngoài", reading: "そと (soto)" }] },
         { kanji: "間", han_viet: "GIAN", kanji_meaning: "Giữa, khoảng không", words: [{ word: "間", meaning: "Ở giữa", reading: "あいだ (aida)" }] },
         { kanji: "隣", han_viet: "LÂN", kanji_meaning: "Bên cạnh (sát vách)", words: [{ word: "隣", meaning: "Bên cạnh", reading: "となり (tonari)" }] },
-        { kanji: "横", han_viet: "HOÀNH", kanji_meaning: "Bên cạnh, bề ngang", words: [{ word: "横", meaning: "Bên cạnh, chiều ngang", reading: "よこ (yoko)" }] }
+        { kanji: "横", han_viet: "HOÀNH", kanji_meaning: "Bên cạnh, bề ngang", words: [{ word: "横", meaning: "Bên cạnh, chiều ngang", reading: "よこ (yoko)" }] },
+        { kanji: "右", han_viet: "HỮU", kanji_meaning: "Bên phải", words: [{ word: "右", meaning: "Bên phải", reading: "みぎ (migi)" }] },
+        { kanji: "左", han_viet: "TẢ", kanji_meaning: "Bên trái", words: [{ word: "左", meaning: "Bên trái", reading: "ひだり (hidari)" }] }
       ]
     },
     {
